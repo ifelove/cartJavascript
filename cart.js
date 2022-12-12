@@ -8,7 +8,7 @@ const cartTotal = document.querySelector(".cart-total");
 const cartContent = document.querySelector(".cart-content");
 const productsDOM = document.querySelector(".products-center");
 let cart = [];
-
+let buttonsDOM = [];
 //getting the product
 class Products {
   async getProducts() {
@@ -58,6 +58,8 @@ class UI {
   getBagBtns() {
     const buttons = [...document.querySelectorAll(".bag-btn")];
     console.log(buttons);
+    buttonsDOM = buttons;
+
     buttons.forEach((button) => {
       let id = button.dataset.id;
       console.log(id);
@@ -66,7 +68,63 @@ class UI {
         button.innerText = "In Cart";
         button.disabled = true;
       }
+      button.addEventListener("click", (e) => {
+        console.log("hi");
+        e.target.innerText = "In Cart";
+        e.target.disabled = true;
+        //get product from produts
+        let cartItem = Storage.getProduct(id);
+        cartItem = { ...cartItem, amount: 1 };
+        console.log(cartItem);
+        //add products to the cart
+        cart = [...cart, cartItem];
+        console.log(cart);
+        //save product to localStorage
+        Storage.saveCart(cart);
+        //set cart value
+        this.setCartValue(cart);
+        //display cart item
+        this.addCartItem(cartItem);
+        //show cart
+        this.showCart();
+      });
     });
+  }
+  setCartValue(cart) {
+    let tempTotal = 0;
+    let itemsTotal = 0;
+    cart.map((item) => {
+      const { price, amount } = item;
+      tempTotal += price * amount;
+      itemsTotal += amount;
+    });
+    cartTotal.innerText = parseFloat(tempTotal.toFixed(2));
+    cartItems.innerText = itemsTotal;
+    console.log(cartItems, cartTotal);
+  }
+
+  addCartItem(item) {
+    const div = document.createElement("div");
+    div.classList.add("cart-item");
+    div.innerHTML = `  <img src=${item.image} alt="product" />
+            <div>
+              <h4>${item.title}</h4>
+              <h5>$${item.price}</h5>
+              <span class="remove-item" data-id=${item.id}>remove</span>
+            </div>
+            <div>
+              <i class="fas fa-chevron-up" data-id=${item.id}></i>  
+              <p class="item-amount">
+                ${item.amount}
+              </p>
+              <i class="fas fa-chevron-down" data-id=${item.id}></i>
+            </div>`;
+    cartContent.appendChild(div);
+    console.log(cartContent);
+  }
+  showCart() {
+    cartOverlay.classList.add("transparentBcg");
+    cartDOM.classList.add("showCart");
   }
 }
 
@@ -74,7 +132,14 @@ class UI {
 
 class Storage {
   static savedProducts(products) {
-    localStorage.setItem("product", JSON.stringify(products));
+    localStorage.setItem("products", JSON.stringify(products));
+  }
+  static getProduct(id) {
+    let products = JSON.parse(localStorage.getItem("products"));
+    return products.find((product) => product.id === id);
+  }
+  static saveCart(cart) {
+    localStorage.setItem("cart", JSON.stringify(cart));
   }
 }
 
