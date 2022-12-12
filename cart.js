@@ -17,10 +17,10 @@ class Products {
       let data = await response.json();
       let products = data.items;
       products = products.map((item) => {
-        let { title, image } = item.fields;
+        const { title, price } = item.fields;
         const { id } = item.sys;
-        image = item.fields.image.fields.file.url;
-        const price = item.fields.price;
+        const image = item.fields.image.fields.file.url;
+
         return { title, id, image, price };
       });
       console.log(products);
