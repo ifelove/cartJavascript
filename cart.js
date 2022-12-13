@@ -46,7 +46,7 @@ class UI {
             />
             <button class="bag-btn" data-id=${product.id}>
               <i class="fas fa-shopping-cart"></i>
-              add to bag
+              add to cart
             </button>
           </div>
           <h3>${product.title}</h3>
@@ -126,13 +126,13 @@ class UI {
     cartOverlay.classList.add("transparentBcg");
     cartDOM.classList.add("showCart");
   }
-  // setupAPP() {
-  //  cart = Storage.getCart();
-  //   this.setCartValue(cart);
-  //   this.populateCart(cart);
-  //   cartBtn.addEventListener("click", this.showCart);
-  //   closeCartBtn.addEventListener("click", this.hideCart);
-  //  }
+  setupAPP() {
+    // cart = Storage.getCart();
+    this.setCartValue(cart);
+    this.populateCart(cart);
+    cartBtn.addEventListener("click", this.showCart);
+    closeCartBtn.addEventListener("click", this.hideCart);
+  }
   populateCart(cart) {
     cart.forEach((item) => {
       this.addCartItem(item);
@@ -145,7 +145,27 @@ class UI {
   cartLogic() {
     //if we want to target only the DOM and not the whole Class ,we should use  callback function inside event listener instead
     clearCartBtn.addEventListener("click", () => this.clearCart());
+
+    cartContent.addEventListener("click", (e) => {
+      console.log(e.target);
+      if (e.target.classList.contains("remove-item")) {
+        let removeItem = e.target;
+        let id = removeItem.dataset.id;
+        cartContent.removeChild(removeItem.parentElement.parentElement);
+        this.removeItem(id);
+      } else if (e.target.classList.contains("fa-chevron-up")) {
+        let addAmount = e.target;
+        let id = addAmount.dataset.id;
+        let tempItem = cart.find((item) => item.id === id);
+        tempItem.amount = tempItem.amount + 1;
+        Storage.saveCart(cart);
+        this.setCartValue(cart);
+        addAmount.nextElementSibling.innerText = tempItem.amount;
+      } else if (e.target.classList.contains("fa-chevron-down")) {
+      }
+    });
   }
+
   clearCart() {
     let cartItems = cart.map((item) => item.id);
     console.log(cartItems);
@@ -161,7 +181,7 @@ class UI {
     Storage.saveCart();
     let button = this.getSingleButton(id);
     button.disabled = false;
-    button.innerHTML = `<i class="fas fa-shopping-cart"></i>add to bag `;
+    button.innerHTML = `<i class="fas fa-shopping-cart"></i>add to cart `;
   }
   getSingleButton(id) {
     return buttonsDOM.find((button) => button.dataset.id === id);
@@ -181,10 +201,11 @@ class Storage {
   static saveCart(cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }
-   static getCart() {
-    return localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart"))
+  static getCart() {
+    return localStorage.getItem("cart")
+      ? JSON.parse(localStorage.getItem("cart"))
       : [];
-   }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
