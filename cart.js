@@ -126,6 +126,46 @@ class UI {
     cartOverlay.classList.add("transparentBcg");
     cartDOM.classList.add("showCart");
   }
+  // setupAPP() {
+  //  cart = Storage.getCart();
+  //   this.setCartValue(cart);
+  //   this.populateCart(cart);
+  //   cartBtn.addEventListener("click", this.showCart);
+  //   closeCartBtn.addEventListener("click", this.hideCart);
+  //  }
+  populateCart(cart) {
+    cart.forEach((item) => {
+      this.addCartItem(item);
+    });
+  }
+  hideCart() {
+    cartOverlay.classList.remove("transparentBcg");
+    cartDOM.classList.remove("showCart");
+  }
+  cartLogic() {
+    //if we want to target only the DOM and not the whole Class ,we should use  callback function inside event listener instead
+    clearCartBtn.addEventListener("click", () => this.clearCart());
+  }
+  clearCart() {
+    let cartItems = cart.map((item) => item.id);
+    console.log(cartItems);
+    cartItems.forEach((id) => this.removeItem(id));
+    while (cartContent.children.lenght > 0) {
+      cartContent.removeChild(cartContent.children[0]);
+    }
+    this.hideCart();
+  }
+  removeItem(id) {
+    cart = cart.filter((item) => item.id != id);
+    this.setCartValue(cart);
+    Storage.saveCart();
+    let button = this.getSingleButton(id);
+    button.disabled = false;
+    button.innerHTML = `<i class="fas fa-shopping-cart"></i>add to bag `;
+  }
+  getSingleButton(id) {
+    return buttonsDOM.find((button) => button.dataset.id === id);
+  }
 }
 
 //local Storage
@@ -141,12 +181,20 @@ class Storage {
   static saveCart(cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
   }
+   static getCart() {
+    return localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart"))
+      : [];
+   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const ui = new UI();
   const products = new Products();
 
+  //setup App
+  ui.setupAPP();
+
+  //get product
   products
     .getProducts()
     .then((products) => {
@@ -155,5 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(() => {
       ui.getBagBtns();
+      ui.cartLogic();
     });
 });
